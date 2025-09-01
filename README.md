@@ -23,7 +23,7 @@
     // Канал для создания взаимодействия
     public class Some1Channel : IChannel
     {
-        public int Id { get; internal set; }
+        public int Id { get; set; }
     }
 
     public class Pull1Service : IService,
