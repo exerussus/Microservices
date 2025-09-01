@@ -1,0 +1,16 @@
+{
+    "name": "com.exerussus.1microservice.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:986181d2ea9140bea4793aaf4fc147cf"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

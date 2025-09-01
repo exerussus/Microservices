@@ -1,0 +1,23 @@
+{
+  "name": "com.exerussus.microservices",
+  "version": "1.0.0",
+  "displayName": "Microservices",
+  "description": "Минимальный набор интерфейсов и апи для создания микросервисной архитектуры.",
+  "unity": "2020.3",
+  "dependencies": {},
+  "keywords": [
+    "exerussus",
+    "microservices",
+    "service",
+    "unity",
+    "architecture"
+  ],
+  "author": {
+    "name": "Exerussus",
+    "email": "solovyov.production@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/exerussus/Microservices.git"
+  }
+}
