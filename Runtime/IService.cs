@@ -42,7 +42,6 @@ namespace Exerussus.Microservices.Runtime
         public Dictionary<int, RegisteredService> RegisteredServices {get; set; }
         public Dictionary<int, HashSet<Type>> PushersToChannels {get; set; }
         public Dictionary<Type, HashSet<int>> ChannelsToPullers {get; set; }
-        public object LockChannelsPullers { get; set; }
 
         public virtual void OnServiceRegistered(RegisteredService registeredService) {}
         public virtual void OnServiceUnregistered(RegisteredService registeredService) {}

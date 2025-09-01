@@ -60,7 +60,6 @@ namespace Exerussus.Microservices.Runtime
                     inspector.PushersToChannels = PushersToChannels;
                     inspector.ChannelsToPullers = ChannelsToPullers;
                     inspector.ChannelsSubs = ChannelsSubs;
-                    inspector.LockChannelsPullers = LockChannelsPullers;
                 }
 
                 if (pullChannelTypes.Count > 0)
