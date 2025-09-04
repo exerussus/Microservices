@@ -36,7 +36,7 @@ namespace Exerussus.Microservices.Runtime
         
     }
     
-    public interface IServiceInspector
+    public interface IServiceInspector : IService
     {
         public Dictionary<Type, object> ChannelsSubs {get; set; }
         public Dictionary<int, RegisteredService> RegisteredServices {get; set; }

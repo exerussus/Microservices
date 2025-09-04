@@ -1,8 +1,8 @@
 {
   "name": "com.exerussus.microservices",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Microservices",
-  "description": "Минимальный набор интерфейсов и апи для создания микросервисной архитектуры.",
+  "description": "Минимальный набор интерфейсов и апи для создания микро-сервисной архитектуры.",
   "unity": "2020.3",
   "dependencies": {},
   "keywords": [
