@@ -17,17 +17,9 @@ namespace Exerussus.Microservices.Runtime
         public void Run();
     }
     
-    public interface IChannelPuller<in TChannel>
-        where TChannel : IChannel
+    public interface IChannelPuller<in TChannel> where TChannel : IChannel
     {
-        public UniTask PullBroadcast(TChannel channel);
-        
-        [Preserve]
-        internal void RegisterPuller()
-        {
-            Func<TChannel, UniTask> pull = PullBroadcast;
-            MicroservicesApi.RegisterPuller(this, pull);
-        }
+        UniTask PullBroadcast(TChannel channel);
     }
     
     public interface IChannelPusher<in TChannel>

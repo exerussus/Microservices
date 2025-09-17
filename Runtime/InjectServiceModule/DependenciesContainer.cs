@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Exerussus.Microservices.Runtime.Modules.InjectModule
@@ -36,6 +37,11 @@ namespace Exerussus.Microservices.Runtime.Modules.InjectModule
             }
             
             return this;
+        }
+
+        public object[] GetAllRefs()
+        {
+            return _refs.Values.ToArray();
         }
         
         public T Get<T>()

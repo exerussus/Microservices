@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text;
 using Exerussus.Microservices.Runtime.Modules.InjectModule;
 using Exerussus.Microservices.Runtime.Registration;
-using UnityEngine;
 
 namespace Exerussus.Microservices.Runtime.Modules
 {
