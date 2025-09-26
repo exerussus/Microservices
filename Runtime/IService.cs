@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Exerussus._1Extensions.MicroserviceFeature;
 using Exerussus.Microservices.Runtime.Registration;
-using UnityEngine.Scripting;
 
 namespace Exerussus.Microservices.Runtime
 {

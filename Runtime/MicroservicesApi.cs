@@ -104,7 +104,8 @@ namespace Exerussus.Microservices.Runtime
         public static void UnregisterAll()
         {
             foreach (var serviceId in RegisteredServices.Keys.ToArray()) UnregisterService(serviceId);
-            
+
+            _freeId = 0;
             RegisteredServices.Clear();
             ChannelsSubs.Clear();
         }
