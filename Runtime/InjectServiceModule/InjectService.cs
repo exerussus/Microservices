@@ -9,11 +9,12 @@ namespace Exerussus.Microservices.Runtime.Modules
 {
     public class InjectService : IServiceInspector
     {
-        public InjectService(DependenciesContainer container)
+        public InjectService(DependenciesContainer container, bool needInjectInterface = true)
         {
             DependenciesContainer = container;
+            _needInjectInterface = needInjectInterface;
         }
-
+        
         public readonly DependenciesContainer DependenciesContainer;
         public ServiceHandle Handle { get; set; }
         public Dictionary<Type, object> ChannelsSubs { get; set; }
@@ -21,6 +22,7 @@ namespace Exerussus.Microservices.Runtime.Modules
         public Dictionary<int, HashSet<Type>> PushersToChannels { get; set; }
         public Dictionary<Type, HashSet<int>> ChannelsToPullers { get; set; }
 
+        private readonly bool _needInjectInterface;
         private static readonly Type DiAttrType = typeof(InjectAttribute);
 
         public void OnServiceRegistered(RegisteredService registeredService)
@@ -34,7 +36,7 @@ namespace Exerussus.Microservices.Runtime.Modules
             {
                 if (fi.IsStatic) continue;
 
-                if (Attribute.IsDefined(fi, DiAttrType))
+                if (Attribute.IsDefined(fi, DiAttrType) || !_needInjectInterface)
                 {
                     if (DependenciesContainer.TryGet(fi.FieldType, out var injectObj))
                     {
