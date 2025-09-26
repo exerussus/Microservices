@@ -27,7 +27,7 @@ namespace Exerussus.Microservices.Runtime.Modules
 
         public void OnServiceRegistered(RegisteredService registeredService)
         {
-            if (registeredService.Service is IInjectedService) TryInjectFields(registeredService.Service);
+            if (registeredService.Service is IInjectedService || !_needInjectInterface) TryInjectFields(registeredService.Service);
         }
 
         public void TryInjectFields(object target)
@@ -36,7 +36,7 @@ namespace Exerussus.Microservices.Runtime.Modules
             {
                 if (fi.IsStatic) continue;
 
-                if (Attribute.IsDefined(fi, DiAttrType) || !_needInjectInterface)
+                if (Attribute.IsDefined(fi, DiAttrType))
                 {
                     if (DependenciesContainer.TryGet(fi.FieldType, out var injectObj))
                     {
