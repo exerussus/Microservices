@@ -38,6 +38,31 @@ namespace Exerussus.Microservices.Runtime.Modules.InjectModule
             
             return this;
         }
+        
+        public DependenciesContainer AddRange(object[] refs)
+        {
+            if (refs is not { Length: > 0 })
+            {
+                Debug.LogError($"DependenciesContainer ERROR | Can't add null refs.");
+                return this;
+            }
+
+            for (int i = 0; i < refs.Length; i++)
+            {
+                ref var refObject = ref refs[i];
+
+                var type = refObject.GetType();
+
+                if (_refs.ContainsKey(type))
+                {
+                    Debug.LogWarning($"DependenciesContainer WARNING | Type {type} already added. Replaced with new reference.");
+                }
+                
+                _refs[type] = refObject;
+            }
+            
+            return this;
+        }
 
         public object[] GetAllRefs()
         {
