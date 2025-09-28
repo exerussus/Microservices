@@ -23,6 +23,11 @@ namespace Exerussus.Microservices.Runtime
         {
             await MicroservicesApi.PushBroadcast(Id, broadcast);
         }
+        
+        public async UniTask Push<T>() where T : struct, IChannel
+        {
+            await MicroservicesApi.PushBroadcast(Id, new T());
+        }
 
         public override string ToString()
         {
