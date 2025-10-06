@@ -21,8 +21,19 @@ namespace Exerussus.Microservices.Runtime
         UniTask PullBroadcast(TChannel channel);
     }
     
+    public interface ICommandPuller<in TCommand, TResponse> where TCommand : ICommand<TResponse>
+    {
+        UniTask<TResponse> PullBroadcast(TCommand channel);
+    }
+    
     public interface IChannelPusher<in TChannel>
         where TChannel : IChannel
+    {
+        
+    }
+    
+    public interface ICommandPusher<in TCommand, TResponse>
+        where TCommand : ICommand<TResponse>
     {
         
     }

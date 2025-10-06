@@ -24,6 +24,11 @@ namespace Exerussus.Microservices.Runtime
             await MicroservicesApi.PushBroadcast(Id, broadcast);
         }
         
+        public async UniTask<(bool success, TResponse response)> PushCommand<TRequest, TResponse>(TRequest broadcast = default) where TRequest : ICommand<TResponse>
+        {
+            return await MicroservicesApi.PushCommand<TRequest, TResponse>(Id, broadcast);
+        }
+        
         public async UniTask Push<T>() where T : struct, IChannel
         {
             await MicroservicesApi.PushBroadcast(Id, new T());
