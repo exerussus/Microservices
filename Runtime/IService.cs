@@ -18,12 +18,22 @@ namespace Exerussus.Microservices.Runtime
     
     public interface IChannelPuller<in TChannel> where TChannel : IChannel
     {
-        UniTask PullBroadcast(TChannel channel);
+        void PullBroadcast(TChannel channel);
     }
     
     public interface ICommandPuller<in TCommand, TResponse> where TCommand : ICommand<TResponse>
     {
-        UniTask<TResponse> PullBroadcast(TCommand channel);
+        TResponse PullBroadcast(TCommand channel);
+    }
+    
+    public interface IChannelPullerAsync<in TChannel> where TChannel : IChannel
+    {
+        UniTask PullBroadcastAsync(TChannel channel);
+    }
+    
+    public interface ICommandPullerAsync<in TCommand, TResponse> where TCommand : ICommand<TResponse>
+    {
+        UniTask<TResponse> PullBroadcastAsync(TCommand channel);
     }
     
     public interface IChannelPusher<in TChannel>
@@ -38,12 +48,27 @@ namespace Exerussus.Microservices.Runtime
         
     }
     
+    public interface IChannelPusherAsync<in TChannel>
+        where TChannel : IChannel
+    {
+        
+    }
+    
+    public interface ICommandPusherAsync<in TCommand, TResponse>
+        where TCommand : ICommand<TResponse>
+    {
+        
+    }
+    
     public interface IServiceInspector : IService
     {
-        public Dictionary<Type, object> ChannelsSubs {get; set; }
-        public Dictionary<int, RegisteredService> RegisteredServices {get; set; }
-        public Dictionary<int, HashSet<Type>> PushersToChannels {get; set; }
-        public Dictionary<Type, HashSet<int>> ChannelsToPullers {get; set; }
+        public Dictionary<Type, object> AsyncChannelsSubs {get; }
+        public Dictionary<int, RegisteredService> RegisteredServices {get; }
+        public Dictionary<int, HashSet<Type>> AsyncPushersToChannels {get; }
+        public Dictionary<Type, HashSet<int>> AsyncChannelsToPullers {get; }
+        Dictionary<int, HashSet<Type>> PushersToChannels { get; }
+        Dictionary<Type, HashSet<int>> ChannelsToPullers { get; }
+        Dictionary<Type, object> ChannelsSubs { get; }
 
         public virtual void OnServiceRegistered(RegisteredService registeredService) {}
         public virtual void OnServiceUnregistered(RegisteredService registeredService) {}
