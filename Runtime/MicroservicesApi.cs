@@ -97,9 +97,24 @@ namespace Exerussus.Microservices.Runtime
                 if (pullAsyncChannelTypes.Count > 0)
                 {
                     PullerRegistrar.RegisterAllAsyncChannelPullers(service);
-                    PullerRegistrar.RegisterAllAsyncCommandPullers(service);
 
                     foreach (var channelType in pullAsyncChannelTypes)
+                    {
+                        if (!AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        {
+                            pullers = new HashSet<int>();
+                            AsyncChannelsToPullers.Add(channelType, pullers);
+                        }
+
+                        pullers.Add(registeredService.Id);
+                    }
+                }
+
+                if (pullAsyncCommandTypes.Count > 0)
+                {
+                    PullerRegistrar.RegisterAllAsyncCommandPullers(service);
+
+                    foreach (var channelType in pullAsyncCommandTypes)
                     {
                         if (!AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
@@ -114,9 +129,24 @@ namespace Exerussus.Microservices.Runtime
                 if (pullChannelTypes.Count > 0)
                 {
                     PullerRegistrar.RegisterAllChannelPullers(service);
-                    PullerRegistrar.RegisterAllCommandPullers(service);
 
                     foreach (var channelType in pullChannelTypes)
+                    {
+                        if (!ChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        {
+                            pullers = new HashSet<int>();
+                            ChannelsToPullers.Add(channelType, pullers);
+                        }
+
+                        pullers.Add(registeredService.Id);
+                    }
+                }
+                
+                if (pullCommandTypes.Count > 0)
+                {
+                    PullerRegistrar.RegisterAllCommandPullers(service);
+
+                    foreach (var channelType in pullCommandTypes)
                     {
                         if (!ChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
