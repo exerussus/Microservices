@@ -33,7 +33,7 @@ namespace Exerussus.Microservices.Runtime.Modules
             if (registeredService.Service is IInjectedService || !_needInjectInterface) TryInjectFields(registeredService.Service);
         }
 
-        public void TryInjectFields(object target)
+        public void TryInjectFields(object target, DependenciesContainer localContainer = null)
         {
             foreach (var fi in target.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
@@ -42,6 +42,10 @@ namespace Exerussus.Microservices.Runtime.Modules
                 if (Attribute.IsDefined(fi, DiAttrType))
                 {
                     if (DependenciesContainer.TryGet(fi.FieldType, out var injectObj))
+                    {
+                        fi.SetValue(target, injectObj);
+                    }
+                    else if (localContainer != null && localContainer.TryGet(fi.FieldType, out injectObj))
                     {
                         fi.SetValue(target, injectObj);
                     }
