@@ -70,6 +70,7 @@ namespace Exerussus.Microservices.Runtime
         Dictionary<Type, HashSet<int>> ChannelsToPullers { get; }
         Dictionary<Type, object> ChannelsSubs { get; }
 
+        public virtual void OnInspectorRegistration() {}
         public virtual void OnServiceRegistered(RegisteredService registeredService) {}
         public virtual void OnServiceUnregistered(RegisteredService registeredService) {}
     }

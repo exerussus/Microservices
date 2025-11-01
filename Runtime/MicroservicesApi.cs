@@ -92,6 +92,7 @@ namespace Exerussus.Microservices.Runtime
                     ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.PushersToChannels), PushersToChannels);
                     ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.ChannelsToPullers), ChannelsToPullers);
                     ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.ChannelsSubs), ChannelsSubs);
+                    inspector.OnInspectorRegistration();
                 }
 
                 if (pullAsyncChannelTypes.Count > 0)

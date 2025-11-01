@@ -28,9 +28,17 @@ namespace Exerussus.Microservices.Runtime.Modules
         private readonly bool _needInjectInterface;
         private static readonly Type DiAttrType = typeof(InjectAttribute);
 
+        public void OnInspectorRegistration()
+        {
+            foreach (var registeredService in RegisteredServices.Values)
+            {
+                if (!_needInjectInterface || registeredService.Service is IInjectedService) TryInjectFields(registeredService.Service);
+            }
+        }
+
         public void OnServiceRegistered(RegisteredService registeredService)
         {
-            if (registeredService.Service is IInjectedService || !_needInjectInterface) TryInjectFields(registeredService.Service);
+            if (!_needInjectInterface || registeredService.Service is IInjectedService) TryInjectFields(registeredService.Service);
         }
 
         public void TryInjectFields(object target, DependenciesContainer localContainer = null)
