@@ -17,20 +17,14 @@ namespace Exerussus.Microservices.Runtime.Modules
         
         public readonly DependenciesContainer DependenciesContainer;
         public ServiceHandle Handle { get; set; }
-        public Dictionary<Type, object> AsyncChannelsSubs { get; } = null;
-        public Dictionary<int, RegisteredService> RegisteredServices { get; } = null;
-        public Dictionary<int, HashSet<Type>> AsyncPushersToChannels { get; } = null;
-        public Dictionary<Type, HashSet<int>> AsyncChannelsToPullers { get; } = null;
-        public Dictionary<int, HashSet<Type>> PushersToChannels { get; } = null;
-        public Dictionary<Type, HashSet<int>> ChannelsToPullers { get; } = null;
-        public Dictionary<Type, object> ChannelsSubs { get; } = null;
-
         private readonly bool _needInjectInterface;
         private static readonly Type DiAttrType = typeof(InjectAttribute);
 
+        public InternalInstances InternalInstances { get; } = null;
+
         public void OnInspectorRegistration()
         {
-            foreach (var registeredService in RegisteredServices.Values)
+            foreach (var registeredService in InternalInstances.RegisteredServices.Values)
             {
                 if (!_needInjectInterface || registeredService.Service is IInjectedService) TryInjectFields(registeredService.Service);
             }

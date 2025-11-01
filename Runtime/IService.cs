@@ -62,13 +62,7 @@ namespace Exerussus.Microservices.Runtime
     
     public interface IServiceInspector : IService
     {
-        public Dictionary<Type, object> AsyncChannelsSubs {get; }
-        public Dictionary<int, RegisteredService> RegisteredServices {get; }
-        public Dictionary<int, HashSet<Type>> AsyncPushersToChannels {get; }
-        public Dictionary<Type, HashSet<int>> AsyncChannelsToPullers {get; }
-        Dictionary<int, HashSet<Type>> PushersToChannels { get; }
-        Dictionary<Type, HashSet<int>> ChannelsToPullers { get; }
-        Dictionary<Type, object> ChannelsSubs { get; }
+        public InternalInstances InternalInstances { get; }
 
         public virtual void OnInspectorRegistration() {}
         public virtual void OnServiceRegistered(RegisteredService registeredService) {}

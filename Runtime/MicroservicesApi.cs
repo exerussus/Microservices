@@ -12,19 +12,7 @@ namespace Exerussus.Microservices.Runtime
 {
     public static class MicroservicesApi
     {
-        private static readonly Dictionary<Type, object> ChannelsSubs = new ();
-        private static readonly Dictionary<Type, object> CommandSubs = new ();
-        private static readonly Dictionary<Type, object> AsyncChannelsSubs = new ();
-        private static readonly Dictionary<Type, object> AsyncCommandSubs = new ();
-        private static readonly Dictionary<int, IServiceInspector> InspectorServices = new ();
-        private static readonly Dictionary<int, RegisteredService> RegisteredServices = new ();
-        private static readonly Dictionary<int, HashSet<Type>> AsyncPushersToChannels = new ();
-        private static readonly Dictionary<Type, HashSet<int>> AsyncChannelsToPullers = new ();
-        private static readonly Dictionary<int, HashSet<Type>> PushersToChannels = new ();
-        private static readonly Dictionary<Type, HashSet<int>> ChannelsToPullers = new ();
-        private static readonly object RegisterLock = new();
-        private static readonly object LockAsyncChannelsPullers = new();
-        private static readonly object LockChannelsPullers = new();
+        private static readonly InternalInstances Refs = new();
         private static int _freeId;
 
         #region PUBLIC
@@ -33,7 +21,7 @@ namespace Exerussus.Microservices.Runtime
         {
             ServiceHandle handle;
             
-            lock (RegisterLock)
+            lock (Refs.RegisterLock)
             {
 
                 if (service == null)
@@ -79,32 +67,26 @@ namespace Exerussus.Microservices.Runtime
                     pullCommandTypesArray, 
                     pushCommandTypesArray);
 
-                RegisteredServices.Add(handle.Id, registeredService);
-                
                 if (service is IServiceInspector inspector)
                 {
-                    InspectorServices.Add(service.Handle.Id, inspector);
+                    Refs.InspectorServices.Add(service.Handle.Id, inspector);
                     
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.RegisteredServices), RegisteredServices);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.AsyncPushersToChannels), AsyncPushersToChannels);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.AsyncChannelsToPullers), AsyncChannelsToPullers);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.AsyncChannelsSubs), AsyncChannelsSubs);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.PushersToChannels), PushersToChannels);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.ChannelsToPullers), ChannelsToPullers);
-                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.ChannelsSubs), ChannelsSubs);
+                    ReflectionUtils.SetPropertyValue(inspector, nameof(inspector.InternalInstances), Refs);
                     inspector.OnInspectorRegistration();
                 }
-
+                
+                Refs.RegisteredServices.Add(handle.Id, registeredService);
+                
                 if (pullAsyncChannelTypes.Count > 0)
                 {
                     PullerRegistrar.RegisterAllAsyncChannelPullers(service);
 
                     foreach (var channelType in pullAsyncChannelTypes)
                     {
-                        if (!AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        if (!Refs.AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
                             pullers = new HashSet<int>();
-                            AsyncChannelsToPullers.Add(channelType, pullers);
+                            Refs.AsyncChannelsToPullers.Add(channelType, pullers);
                         }
 
                         pullers.Add(registeredService.Id);
@@ -117,10 +99,10 @@ namespace Exerussus.Microservices.Runtime
 
                     foreach (var channelType in pullAsyncCommandTypes)
                     {
-                        if (!AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        if (!Refs.AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
                             pullers = new HashSet<int>();
-                            AsyncChannelsToPullers.Add(channelType, pullers);
+                            Refs.AsyncChannelsToPullers.Add(channelType, pullers);
                         }
 
                         pullers.Add(registeredService.Id);
@@ -133,10 +115,10 @@ namespace Exerussus.Microservices.Runtime
 
                     foreach (var channelType in pullChannelTypes)
                     {
-                        if (!ChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        if (!Refs.ChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
                             pullers = new HashSet<int>();
-                            ChannelsToPullers.Add(channelType, pullers);
+                            Refs.ChannelsToPullers.Add(channelType, pullers);
                         }
 
                         pullers.Add(registeredService.Id);
@@ -149,10 +131,10 @@ namespace Exerussus.Microservices.Runtime
 
                     foreach (var channelType in pullCommandTypes)
                     {
-                        if (!ChannelsToPullers.TryGetValue(channelType, out var pullers))
+                        if (!Refs.ChannelsToPullers.TryGetValue(channelType, out var pullers))
                         {
                             pullers = new HashSet<int>();
-                            ChannelsToPullers.Add(channelType, pullers);
+                            Refs.ChannelsToPullers.Add(channelType, pullers);
                         }
 
                         pullers.Add(registeredService.Id);
@@ -161,10 +143,10 @@ namespace Exerussus.Microservices.Runtime
 
                 if (pushAsyncChannelTypes.Count > 0)
                 {
-                    if (!AsyncPushersToChannels.TryGetValue(registeredService.Id, out var channels))
+                    if (!Refs.AsyncPushersToChannels.TryGetValue(registeredService.Id, out var channels))
                     {
                         channels = new HashSet<Type>();
-                        AsyncPushersToChannels.Add(registeredService.Id, channels);
+                        Refs.AsyncPushersToChannels.Add(registeredService.Id, channels);
                     }
 
                     foreach (var channelType in pushAsyncChannelTypes) channels.Add(channelType);
@@ -172,10 +154,10 @@ namespace Exerussus.Microservices.Runtime
 
                 if (pushChannelTypes.Count > 0)
                 {
-                    if (!PushersToChannels.TryGetValue(registeredService.Id, out var channels))
+                    if (!Refs.PushersToChannels.TryGetValue(registeredService.Id, out var channels))
                     {
                         channels = new HashSet<Type>();
-                        PushersToChannels.Add(registeredService.Id, channels);
+                        Refs.PushersToChannels.Add(registeredService.Id, channels);
                     }
 
                     foreach (var channelType in pushChannelTypes) channels.Add(channelType);
@@ -183,7 +165,7 @@ namespace Exerussus.Microservices.Runtime
 
                 TryRegisterUpdating(registeredService);
 
-                foreach (var (id, serviceInspector) in InspectorServices)
+                foreach (var (id, serviceInspector) in Refs.InspectorServices)
                 {
                     if (registeredService.Id == id) continue;
                     serviceInspector.OnServiceRegistered(registeredService);
@@ -195,12 +177,12 @@ namespace Exerussus.Microservices.Runtime
 
         public static void UnregisterAll()
         {
-            foreach (var serviceId in RegisteredServices.Keys.ToArray()) UnregisterService(serviceId);
+            foreach (var serviceId in Refs.RegisteredServices.Keys.ToArray()) UnregisterService(serviceId);
 
             _freeId = 0;
-            RegisteredServices.Clear();
-            AsyncChannelsSubs.Clear();
-            ChannelsSubs.Clear();
+            Refs.RegisteredServices.Clear();
+            Refs.AsyncChannelsSubs.Clear();
+            Refs.ChannelsSubs.Clear();
         }
 
         #endregion
@@ -209,26 +191,26 @@ namespace Exerussus.Microservices.Runtime
 
         internal static bool GetIsValid(int id)
         {
-            return RegisteredServices.ContainsKey(id);
+            return Refs.RegisteredServices.ContainsKey(id);
         }
 
         internal static void UnregisterService(int id)
         {
-            if (!RegisteredServices.Remove(id, out var registeredService)) return;
+            if (!Refs.RegisteredServices.Remove(id, out var registeredService)) return;
 
             foreach (var channelType in registeredService.PullAsyncChannels)
             {
-                if (AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
+                if (Refs.AsyncChannelsToPullers.TryGetValue(channelType, out var pullers))
                 {
                     pullers.Remove(registeredService.Id);
-                    if (pullers.Count == 0) AsyncChannelsToPullers.Remove(channelType);
+                    if (pullers.Count == 0) Refs.AsyncChannelsToPullers.Remove(channelType);
                 }
             }
 
-            AsyncPushersToChannels.Remove(registeredService.Id);
-            InspectorServices.Remove(registeredService.Id);
+            Refs.AsyncPushersToChannels.Remove(registeredService.Id);
+            Refs.InspectorServices.Remove(registeredService.Id);
 
-            foreach (var serviceInspector in InspectorServices.Values) serviceInspector.OnServiceUnregistered(registeredService);
+            foreach (var serviceInspector in Refs.InspectorServices.Values) serviceInspector.OnServiceUnregistered(registeredService);
             
             Debug.Log($"Microservices | Unregister service {registeredService.ServiceType.Name} with ID : {registeredService.Id}.");
 
@@ -240,7 +222,7 @@ namespace Exerussus.Microservices.Runtime
             if (instance is not IService service) return;
             
             Debug.Log($"Microservices | RegisterPuller : {typeof(TChannel).Name} in {instance.GetType().Name}.");
-            var registeredService = RegisteredServices[service.Handle.Id];
+            var registeredService = Refs.RegisteredServices[service.Handle.Id];
             
             AddChannelToPool(registeredService, puller);
         }
@@ -250,7 +232,7 @@ namespace Exerussus.Microservices.Runtime
             if (instance is not IService service) return;
             
             Debug.Log($"Microservices | RegisterPuller : {typeof(TChannel).Name} in {instance.GetType().Name}.");
-            var registeredService = RegisteredServices[service.Handle.Id];
+            var registeredService = Refs.RegisteredServices[service.Handle.Id];
             
             AddCommandToPool(registeredService, puller);
         }
@@ -260,7 +242,7 @@ namespace Exerussus.Microservices.Runtime
             if (instance is not IService service) return;
             
             Debug.Log($"Microservices | RegisterPuller : {typeof(TChannel).Name} in {instance.GetType().Name}.");
-            var registeredService = RegisteredServices[service.Handle.Id];
+            var registeredService = Refs.RegisteredServices[service.Handle.Id];
             
             AddAsyncChannelToPool(registeredService, puller);
         }
@@ -270,7 +252,7 @@ namespace Exerussus.Microservices.Runtime
             if (instance is not IService service) return;
             
             Debug.Log($"Microservices | RegisterPuller : {typeof(TChannel).Name} in {instance.GetType().Name}.");
-            var registeredService = RegisteredServices[service.Handle.Id];
+            var registeredService = Refs.RegisteredServices[service.Handle.Id];
             
             AddAsyncCommandToPool(registeredService, puller);
         }
@@ -285,7 +267,7 @@ namespace Exerussus.Microservices.Runtime
                 return;
             }
             
-            if (!RegisteredServices.TryGetValue(serviceId, out var registeredService))
+            if (!Refs.RegisteredServices.TryGetValue(serviceId, out var registeredService))
             {
                 Debug.LogError($"Microservices | Can't push async broadcast {type.Name} (id:{serviceId}) from unregistered service.");
                 return;
@@ -297,7 +279,7 @@ namespace Exerussus.Microservices.Runtime
                 return;
             }
             
-            if (!AsyncChannelsSubs.TryGetValue(type, out var subObj)) return;
+            if (!Refs.AsyncChannelsSubs.TryGetValue(type, out var subObj)) return;
             if (subObj is not Func<T, UniTask> subs) return;
             await subs(channel);
         }
@@ -312,7 +294,7 @@ namespace Exerussus.Microservices.Runtime
                 return;
             }
             
-            if (!RegisteredServices.TryGetValue(serviceId, out var registeredService))
+            if (!Refs.RegisteredServices.TryGetValue(serviceId, out var registeredService))
             {
                 Debug.LogError($"Microservices | Can't push broadcast {type.Name} (id:{serviceId}) from unregistered service.");
                 return;
@@ -324,7 +306,7 @@ namespace Exerussus.Microservices.Runtime
                 return;
             }
             
-            if (!ChannelsSubs.TryGetValue(type, out var subObj)) return;
+            if (!Refs.ChannelsSubs.TryGetValue(type, out var subObj)) return;
             if (subObj is not Action<T> subs) return;
             subs(channel);
         }
@@ -339,7 +321,7 @@ namespace Exerussus.Microservices.Runtime
                 return (false, default);
             }
             
-            if (!RegisteredServices.TryGetValue(serviceId, out var registeredService))
+            if (!Refs.RegisteredServices.TryGetValue(serviceId, out var registeredService))
             {
                 Debug.LogError($"Microservices | Can't push async broadcast {type.Name} (id:{serviceId}) from unregistered service.");
                 return (false, default);
@@ -351,7 +333,7 @@ namespace Exerussus.Microservices.Runtime
                 return (false, default);
             }
             
-            if (!AsyncCommandSubs.TryGetValue(type, out var subObj)) return (false, default);
+            if (!Refs.AsyncCommandSubs.TryGetValue(type, out var subObj)) return (false, default);
             if (subObj is not Func<TRequest, UniTask<TResponse>> subs) return (false, default);
             return (true, await subs(channel));
         }
@@ -366,7 +348,7 @@ namespace Exerussus.Microservices.Runtime
                 return (false, default);
             }
             
-            if (!RegisteredServices.TryGetValue(serviceId, out var registeredService))
+            if (!Refs.RegisteredServices.TryGetValue(serviceId, out var registeredService))
             {
                 Debug.LogError($"Microservices | Can't push broadcast {type.Name} (id:{serviceId}) from unregistered service.");
                 return (false, default);
@@ -378,7 +360,7 @@ namespace Exerussus.Microservices.Runtime
                 return (false, default);
             }
             
-            if (!CommandSubs.TryGetValue(type, out var subObj)) return (false, default);
+            if (!Refs.CommandSubs.TryGetValue(type, out var subObj)) return (false, default);
             if (subObj is not Func<TRequest, TResponse> subs) return (false, default);
             return (true, subs(channel));
         }
@@ -389,33 +371,33 @@ namespace Exerussus.Microservices.Runtime
 
         private static void AddAsyncChannelToPool<T>(RegisteredService registeredService, Func<T, UniTask> pull) where T : IChannel
         {
-            lock (LockAsyncChannelsPullers)
+            lock (Refs.LockAsyncChannelsPullers)
             {
                 var type = typeof(T);
                 Func<T, UniTask> subs;
 
-                if (!AsyncChannelsSubs.TryGetValue(type, out var subObject))
+                if (!Refs.AsyncChannelsSubs.TryGetValue(type, out var subObject))
                 {
                     subs = pull;
-                    AsyncChannelsSubs.Add(type, subs);
+                    Refs.AsyncChannelsSubs.Add(type, subs);
                 }
                 else
                 {
                     subs = subObject as Func<T, UniTask>;
                     subs += pull;
-                    AsyncChannelsSubs[type] = subs;
+                    Refs.AsyncChannelsSubs[type] = subs;
                 }
 
                 registeredService.DisposeActions += () =>
                 {
-                    if (AsyncChannelsSubs == null) return;
-                    if (AsyncChannelsSubs.Count == 0) return;
-                    if (!AsyncChannelsSubs.TryGetValue(type, out var subObj)) return;
+                    if (Refs.AsyncChannelsSubs == null) return;
+                    if (Refs.AsyncChannelsSubs.Count == 0) return;
+                    if (!Refs.AsyncChannelsSubs.TryGetValue(type, out var subObj)) return;
                     if (subObj is not Func<T, UniTask> subscribes) return;
                     subscribes -= pull;
-                    lock (LockAsyncChannelsPullers)
+                    lock (Refs.LockAsyncChannelsPullers)
                     {
-                        AsyncChannelsSubs[type] = subscribes;
+                        Refs.AsyncChannelsSubs[type] = subscribes;
                     }
                 };
             }
@@ -423,33 +405,33 @@ namespace Exerussus.Microservices.Runtime
         
         private static void AddChannelToPool<T>(RegisteredService registeredService, Action<T> pull) where T : IChannel
         {
-            lock (LockChannelsPullers)
+            lock (Refs.LockChannelsPullers)
             {
                 var type = typeof(T);
                 Action<T> subs;
 
-                if (!ChannelsSubs.TryGetValue(type, out var subObject))
+                if (!Refs.ChannelsSubs.TryGetValue(type, out var subObject))
                 {
                     subs = pull;
-                    ChannelsSubs.Add(type, subs);
+                    Refs.ChannelsSubs.Add(type, subs);
                 }
                 else
                 {
                     subs = subObject as Action<T>;
                     subs += pull;
-                    ChannelsSubs[type] = subs;
+                    Refs.ChannelsSubs[type] = subs;
                 }
 
                 registeredService.DisposeActions += () =>
                 {
-                    if (ChannelsSubs == null) return;
-                    if (ChannelsSubs.Count == 0) return;
-                    if (!ChannelsSubs.TryGetValue(type, out var subObj)) return;
+                    if (Refs.ChannelsSubs == null) return;
+                    if (Refs.ChannelsSubs.Count == 0) return;
+                    if (!Refs.ChannelsSubs.TryGetValue(type, out var subObj)) return;
                     if (subObj is not Action<T> subscribes) return;
                     subscribes -= pull;
-                    lock (LockChannelsPullers)
+                    lock (Refs.LockChannelsPullers)
                     {
-                        ChannelsSubs[type] = subscribes;
+                        Refs.ChannelsSubs[type] = subscribes;
                     }
                 };
             }
@@ -457,17 +439,17 @@ namespace Exerussus.Microservices.Runtime
         
         private static void AddCommandToPool<TRequest, TResponse>(RegisteredService registeredService, Func<TRequest, TResponse> pull) where TRequest : ICommand<TResponse>
         {
-            lock (LockChannelsPullers)
+            lock (Refs.LockChannelsPullers)
             {
                 var type = typeof(TRequest);
 
-                if (CommandSubs.TryAdd(type, pull))
+                if (Refs.CommandSubs.TryAdd(type, pull))
                 {
                     registeredService.DisposeActions += () =>
                     {
-                        if (CommandSubs == null) return;
-                        if (CommandSubs.Count == 0) return;
-                        lock (LockChannelsPullers) CommandSubs.Remove(type);
+                        if (Refs.CommandSubs == null) return;
+                        if (Refs.CommandSubs.Count == 0) return;
+                        lock (Refs.LockChannelsPullers) Refs.CommandSubs.Remove(type);
                     };
                 }
                 else
@@ -479,17 +461,17 @@ namespace Exerussus.Microservices.Runtime
         
         private static void AddAsyncCommandToPool<TRequest, TResponse>(RegisteredService registeredService, Func<TRequest, UniTask<TResponse>> pull) where TRequest : ICommand<TResponse>
         {
-            lock (LockAsyncChannelsPullers)
+            lock (Refs.LockAsyncChannelsPullers)
             {
                 var type = typeof(TRequest);
 
-                if (AsyncCommandSubs.TryAdd(type, pull))
+                if (Refs.AsyncCommandSubs.TryAdd(type, pull))
                 {
                     registeredService.DisposeActions += () =>
                     {
-                        if (AsyncCommandSubs == null) return;
-                        if (AsyncCommandSubs.Count == 0) return;
-                        lock (LockAsyncChannelsPullers) AsyncCommandSubs.Remove(type);
+                        if (Refs.AsyncCommandSubs == null) return;
+                        if (Refs.AsyncCommandSubs.Count == 0) return;
+                        lock (Refs.LockAsyncChannelsPullers) Refs.AsyncCommandSubs.Remove(type);
                     };
                 }
                 else
