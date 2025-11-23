@@ -13,6 +13,7 @@ namespace Exerussus.Microservices.Runtime.Modules
         {
             DependenciesContainer = container;
             _needInjectInterface = needInjectInterface;
+            container.Add(this);
         }
         
         public readonly DependenciesContainer DependenciesContainer;
